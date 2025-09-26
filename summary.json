@@ -1,0 +1,73 @@
+{
+  "generated": "2025-09-26T16:00:00Z",
+  "asn_stats": [
+    {
+      "asn": "AS54321 CDN Company",
+      "hits": 900
+    },
+    {
+      "asn": "AS12345 Major ISP",
+      "hits": 450
+    },
+    {
+      "asn": "AS15169 Google LLC",
+      "hits": 300
+    }
+  ],
+  "country_stats": [
+    {
+      "country": "US",
+      "hits": 1050
+    },
+    {
+      "country": "CA",
+      "hits": 400
+    },
+    {
+      "country": "AU",
+      "hits": 200
+    }
+  ],
+  "top_uris": [
+    {
+      "uri": "/index.html",
+      "hits": 800
+    },
+    {
+      "uri": "/api/v1/data",
+      "hits": 500
+    },
+    {
+      "uri": "/assets/style.css",
+      "hits": 350
+    }
+  ],
+  "request_types": [
+    {
+      "type": "valid_http",
+      "hits": 1700
+    },
+    {
+      "type": "tls_on_http",
+      "hits": 100
+    },
+    {
+      "type": "other",
+      "hits": 20
+    }
+  ],
+  "status_codes": [
+    {
+      "status": "200",
+      "hits": 1400
+    },
+    {
+      "status": "304",
+      "hits": 250
+    },
+    {
+      "status": "404",
+      "hits": 70
+    }
+  ]
+}
