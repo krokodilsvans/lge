@@ -1,0 +1,5 @@
+{"ip": "66.1.1.1", "uri": "/index.html", "status": "200", "asn": "AS54321 CDN Company", "type": "valid_http", "ipinfo": {"city": "Dallas", "country": "US"}, "timestamp": "2025-09-26T15:05:00Z"}
+{"ip": "203.1.2.3", "uri": "/api/v1/data", "status": "200", "asn": "AS12345 Major ISP", "type": "valid_http", "ipinfo": {"city": "Toronto", "country": "CA"}, "timestamp": "2025-09-26T15:06:00Z"}
+{"ip": "1.1.1.1", "uri": "/assets/style.css", "status": "304", "asn": "AS13335 Cloudflare, Inc.", "type": "valid_http", "ipinfo": {"city": "Sydney", "country": "AU"}, "timestamp": "2025-09-26T15:07:00Z"}
+{"ip": "66.1.1.1", "uri": "/index.html", "status": "200", "asn": "AS54321 CDN Company", "type": "valid_http", "ipinfo": {"city": "Dallas", "country": "US"}, "timestamp": "2025-09-26T15:08:00Z"}
+{"ip": "74.1.2.3", "uri": null, "status": "400", "asn": "AS15169 Google LLC", "type": "tls_on_http", "ipinfo": {"city": "New York", "country": "US"}, "timestamp": "2025-09-26T15:09:00Z"}
