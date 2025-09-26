@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Data Analyzer</title>
+    <title>Unified Log Data Dashboard</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Configure Inter Font and custom styles -->
@@ -25,84 +25,147 @@
             max-height: 400px;
             overflow-y: scroll;
         }
+        .tab-button {
+            padding: 10px 16px;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            color: #4b5563; /* gray-600 */
+        }
+        .tab-button.active {
+            border-bottom-color: #3b82f6; /* blue-500 */
+            color: #1f2937; /* gray-800 */
+            background-color: #ffffff;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8">
 
     <div class="max-w-7xl mx-auto">
         <header class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">UFW Log Analyzer Dashboard</h1>
-            <p class="text-lg text-gray-500">Visualization of enriched firewall log data.</p>
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Unified Log Data Dashboard</h1>
+            <p class="text-lg text-gray-500">Analysis from UFW Firewall and Nginx Access Logs</p>
         </header>
+        
+        <!-- Tab Navigation -->
+        <div id="tab-controls" class="flex border-b border-gray-300 mb-6 bg-gray-100 rounded-t-xl overflow-hidden">
+            <button id="ufw-tab" class="tab-button active" data-tool="ufw">
+                🛡️ UFW Firewall Logs
+            </button>
+            <button id="nginx-tab" class="tab-button" data-tool="nginx">
+                🌐 Nginx Access Logs
+            </button>
+        </div>
 
         <div id="loading" class="text-center p-8 bg-white rounded-xl card transition duration-300">
             <div class="animate-spin inline-block w-8 h-8 border-4 border-t-blue-500 border-gray-200 rounded-full"></div>
-            <p class="mt-4 text-blue-600">Loading data from JSON files...</p>
+            <p class="mt-4 text-blue-600">Loading data from four JSON files...</p>
         </div>
 
         <div id="data-view" class="space-y-8 hidden">
-            <!-- Summary Stats Section -->
-            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Card 1: Top Ports -->
-                <div class="card bg-white rounded-xl p-6">
-                    <h2 class="text-xl font-bold mb-4 text-blue-600 border-b pb-2">Top 10 Targeted Ports</h2>
-                    <table id="topPortsTable" class="w-full data-table text-sm">
-                        <thead>
-                            <tr class="text-gray-500"><th>Port</th><th>Hits</th></tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+            <!-- Tool-specific content rendered here -->
+            <div id="ufw-view" class="tool-content">
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- UFW Card 1: Top Ports -->
+                    <div class="card bg-white rounded-xl p-6">
+                        <h2 class="text-xl font-bold mb-4 text-blue-600 border-b pb-2">UFW: Top 10 Targeted Ports</h2>
+                        <table id="ufwTopPortsTable" class="w-full data-table text-sm">
+                            <thead>
+                                <tr class="text-gray-500"><th>Port</th><th>Hits</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+    
+                    <!-- UFW Card 2: Top Countries -->
+                    <div class="card bg-white rounded-xl p-6">
+                        <h2 class="text-xl font-bold mb-4 text-green-600 border-b pb-2">UFW: Top 10 Source Countries</h2>
+                        <table id="ufwTopCountriesTable" class="w-full data-table text-sm">
+                            <thead>
+                                <tr class="text-gray-500"><th>Country</th><th>Hits</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+    
+                    <!-- UFW Card 3: Actions & Protocols -->
+                    <div class="card bg-white rounded-xl p-6">
+                        <h2 class="text-xl font-bold mb-4 text-purple-600 border-b pb-2">UFW: Action & Protocol Summary</h2>
+                        <h3 class="font-semibold mt-2 mb-1 text-sm text-gray-700">Actions:</h3>
+                        <ul id="ufwActionsList" class="text-sm space-y-1"></ul>
+                        
+                        <h3 class="font-semibold mt-4 mb-1 text-sm text-gray-700">Protocols:</h3>
+                        <ul id="ufwProtocolsList" class="text-sm space-y-1"></ul>
+                    </div>
+                </section>
+                <!-- UFW Raw Data -->
+                <section class="card bg-gray-800 text-white rounded-xl p-6 mt-8">
+                    <h2 class="text-xl font-bold mb-4 text-yellow-300 border-b border-gray-700 pb-2">UFW Raw Entries Preview (ufw_ipinfo_db.json)</h2>
+                    <p class="text-sm text-gray-400 mb-4" id="ufwDbSummary"></p>
+                    <div id="ufwRawDataContent" class="bg-gray-900 rounded-lg p-3 text-xs font-mono">
+                        <pre>Loading raw data...</pre>
+                    </div>
+                </section>
+            </div>
 
-                <!-- Card 2: Top Countries -->
-                <div class="card bg-white rounded-xl p-6">
-                    <h2 class="text-xl font-bold mb-4 text-green-600 border-b pb-2">Top 10 Source Countries</h2>
-                    <table id="topCountriesTable" class="w-full data-table text-sm">
-                        <thead>
-                            <tr class="text-gray-500"><th>Country</th><th>Hits</th></tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-
-                <!-- Card 3: Actions & Protocols -->
-                <div class="card bg-white rounded-xl p-6">
-                    <h2 class="text-xl font-bold mb-4 text-purple-600 border-b pb-2">Action & Protocol Summary</h2>
-                    <h3 class="font-semibold mt-2 mb-1 text-sm text-gray-700">Actions:</h3>
-                    <ul id="actionsList" class="text-sm space-y-1"></ul>
-                    
-                    <h3 class="font-semibold mt-4 mb-1 text-sm text-gray-700">Protocols:</h3>
-                    <ul id="protocolsList" class="text-sm space-y-1"></ul>
-                </div>
-            </section>
-
-            <!-- Raw Data Section -->
-            <section class="card bg-gray-800 text-white rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4 text-yellow-300 border-b border-gray-700 pb-2">Raw Log Entries Preview (ufw_ipinfo_db.json)</h2>
-                <p class="text-sm text-gray-400 mb-4" id="dbSummary"></p>
-                <div id="rawDataContent" class="bg-gray-900 rounded-lg p-3 text-xs font-mono">
-                    <pre>Loading raw data...</pre>
-                </div>
-            </section>
-
+            <div id="nginx-view" class="tool-content hidden">
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Nginx Card 1: Top URIs -->
+                    <div class="card bg-white rounded-xl p-6">
+                        <h2 class="text-xl font-bold mb-4 text-blue-600 border-b pb-2">Nginx: Top 10 Requested URIs</h2>
+                        <table id="nginxTopUrisTable" class="w-full data-table text-sm">
+                            <thead>
+                                <tr class="text-gray-500"><th>URI</th><th>Hits</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+    
+                    <!-- Nginx Card 2: Status Codes -->
+                    <div class="card bg-white rounded-xl p-6">
+                        <h2 class="text-xl font-bold mb-4 text-green-600 border-b pb-2">Nginx: Status Codes</h2>
+                        <table id="nginxStatusCodesTable" class="w-full data-table text-sm">
+                            <thead>
+                                <tr class="text-gray-500"><th>Status</th><th>Hits</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+    
+                    <!-- Nginx Card 3: Request Types -->
+                    <div class="card bg-white rounded-xl p-6">
+                        <h2 class="text-xl font-bold mb-4 text-purple-600 border-b pb-2">Nginx: Request Types</h2>
+                        <ul id="nginxRequestTypesList" class="text-sm space-y-1 pt-2"></ul>
+                    </div>
+                </section>
+                <!-- Nginx Raw Data -->
+                <section class="card bg-gray-800 text-white rounded-xl p-6 mt-8">
+                    <h2 class="text-xl font-bold mb-4 text-yellow-300 border-b border-gray-700 pb-2">Nginx Raw Entries Preview (ipinfo_db.json)</h2>
+                    <p class="text-sm text-gray-400 mb-4" id="nginxDbSummary"></p>
+                    <div id="nginxRawDataContent" class="bg-gray-900 rounded-lg p-3 text-xs font-mono">
+                        <pre>Loading raw data...</pre>
+                    </div>
+                </section>
+            </div>
         </div>
     </div>
 
     <script>
+        let dashboardData = {}; // Global store for all loaded JSON data
+        let activeTool = 'ufw';
+
         /**
-         * Simulates loading a local JSON file.
-         * NOTE: This HTML file MUST be served by a web server, and 'ufw_summary.json' 
-         * and 'ufw_ipinfo_db.json' must be in the same directory. Accessing local 
-         * files directly via file:// protocol may fail due to browser security restrictions.
+         * Loads a local JSON file. Handles both standard and newline-delimited JSON.
          */
-        async function loadJsonFile(filename) {
+        async function loadJsonFile(filename, isJsonL = false) {
             try {
                 const response = await fetch(filename);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch ${filename}: ${response.statusText}`);
                 }
 
-                if (filename === './ufw_ipinfo_db.json') {
+                if (isJsonL) {
                     // Handle newline-delimited JSON (.jsonl)
                     const text = await response.text();
                     const lines = text.trim().split('\n');
@@ -110,7 +173,6 @@
                         try {
                             return JSON.parse(line);
                         } catch {
-                            // Silently ignore malformed lines
                             return null;
                         }
                     }).filter(item => item !== null);
@@ -120,76 +182,154 @@
                 return await response.json();
             } catch (error) {
                 console.error("Loading error for " + filename + ":", error);
+                // Display error message in the main view
                 document.getElementById('data-view').innerHTML = `
                     <p class="text-red-500 p-4 bg-red-100 rounded-lg">
                         Error loading data from <strong>${filename}</strong>. 
-                        Please ensure the file exists and this HTML page is being 
-                        served via a web server (e.g., Python's <code>http.server</code>).
+                        Please ensure the file exists.
                     </p>
                 `;
                 return null;
             }
         }
 
-        function renderSummary(summaryData) {
-            const renderTable = (data, tableId, keyLabel, valueLabel) => {
-                const tbody = document.getElementById(tableId).querySelector('tbody');
-                tbody.innerHTML = '';
-                data.forEach(item => {
-                    const row = tbody.insertRow();
-                    row.className = 'border-b last:border-0 hover:bg-gray-50';
-                    row.insertCell().textContent = item[keyLabel];
-                    row.insertCell().textContent = item[valueLabel];
-                });
-            };
+        /**
+         * Generic function to render data into a simple table.
+         */
+        function renderTable(data, tableId, keyLabel, valueLabel) {
+            const tbody = document.getElementById(tableId).querySelector('tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                const row = tbody.insertRow();
+                row.className = 'border-b last:border-0 hover:bg-gray-50';
+                row.insertCell().textContent = item[keyLabel];
+                row.insertCell().textContent = item[valueLabel];
+            });
+        }
 
-            // Render Top Ports
-            renderTable(summaryData.top_ports, 'topPortsTable', 'port', 'hits');
+        /**
+         * Renders the UFW dashboard view.
+         */
+        function renderUFWDashboard() {
+            const summary = dashboardData.ufwSummary;
+            const dbData = dashboardData.ufwDb;
 
-            // Render Top Countries
-            renderTable(summaryData.country_stats, 'topCountriesTable', 'country', 'hits');
+            // Render Tables
+            renderTable(summary.top_ports, 'ufwTopPortsTable', 'port', 'hits');
+            renderTable(summary.country_stats, 'ufwTopCountriesTable', 'country', 'hits');
 
             // Render Actions
-            const actionsList = document.getElementById('actionsList');
-            actionsList.innerHTML = summaryData.actions.map(a => 
+            const actionsList = document.getElementById('ufwActionsList');
+            actionsList.innerHTML = summary.actions.map(a => 
                 `<li class="${a.action === 'BLOCK' ? 'text-red-400' : 'text-green-400'}">
                     <strong>${a.action}</strong>: ${a.hits} hits
                 </li>`
             ).join('');
 
             // Render Protocols
-            const protocolsList = document.getElementById('protocolsList');
-            protocolsList.innerHTML = summaryData.protocols.map(p => 
+            const protocolsList = document.getElementById('ufwProtocolsList');
+            protocolsList.innerHTML = summary.protocols.map(p => 
                 `<li><strong>${p.proto}</strong>: ${p.hits} hits</li>`
             ).join('');
-        }
 
-        function renderRawData(dbData) {
-            const dbSummary = document.getElementById('dbSummary');
-            const rawDataContent = document.getElementById('rawDataContent');
+            // Render Raw Data Preview
+            const dbSummary = document.getElementById('ufwDbSummary');
+            const rawDataContent = document.getElementById('ufwRawDataContent');
             
-            dbSummary.textContent = `Total unique entries found: ${dbData.length}. Showing the first 5 entries for preview.`;
+            dbSummary.textContent = `Total unique entries found: ${dbData.length}. Showing the first 5 entries for preview. Generated: ${summary.generated}`;
             
             const previewData = dbData.slice(0, 5);
-            
             rawDataContent.innerHTML = `<pre>${previewData.map(item => JSON.stringify(item, null, 2)).join('\n\n')}</pre>`;
+        }
+
+        /**
+         * Renders the Nginx dashboard view.
+         */
+        function renderNginxDashboard() {
+            const summary = dashboardData.nginxSummary;
+            const dbData = dashboardData.nginxDb;
+
+            // Render Tables
+            renderTable(summary.top_uris, 'nginxTopUrisTable', 'uri', 'hits');
+            renderTable(summary.status_codes, 'nginxStatusCodesTable', 'status', 'hits');
+
+            // Render Request Types (as a list)
+            const requestTypesList = document.getElementById('nginxRequestTypesList');
+            requestTypesList.innerHTML = summary.request_types.map(t => 
+                `<li><strong>${t.type}</strong>: ${t.hits} hits</li>`
+            ).join('');
+            
+            // Render Raw Data Preview
+            const dbSummary = document.getElementById('nginxDbSummary');
+            const rawDataContent = document.getElementById('nginxRawDataContent');
+            
+            dbSummary.textContent = `Total unique entries found: ${dbData.length}. Showing the first 5 entries for preview. Generated: ${summary.generated}`;
+
+            const previewData = dbData.slice(0, 5);
+            rawDataContent.innerHTML = `<pre>${previewData.map(item => JSON.stringify(item, null, 2)).join('\n\n')}</pre>`;
+        }
+        
+        /**
+         * Switches the active tab view.
+         */
+        function switchView(tool) {
+            if (activeTool === tool) return;
+
+            // Update tab buttons
+            document.getElementById(`${activeTool}-tab`).classList.remove('active');
+            document.getElementById(`${tool}-tab`).classList.add('active');
+            
+            // Update content visibility
+            document.getElementById(`${activeTool}-view`).classList.add('hidden');
+            document.getElementById(`${tool}-view`).classList.remove('hidden');
+
+            activeTool = tool;
+
+            // Rerender the visible dashboard (in case data was lazy-loaded or requires refreshing)
+            if (tool === 'ufw') {
+                renderUFWDashboard();
+            } else {
+                renderNginxDashboard();
+            }
         }
 
 
         async function initDashboard() {
-            const [summary, db] = await Promise.all([
+            // Load all four files concurrently
+            const [ufwSummary, ufwDb, nginxSummary, nginxDb] = await Promise.all([
                 loadJsonFile('./ufw_summary.json'),
-                loadJsonFile('./ufw_ipinfo_db.json')
+                loadJsonFile('./ufw_ipinfo_db.json', true), // UFW DB is newline-delimited JSON (JSONL)
+                loadJsonFile('./summary.json'), // Nginx summary
+                loadJsonFile('./ipinfo_db.json', true) // Nginx DB is newline-delimited JSON (JSONL)
             ]);
             
             document.getElementById('loading').classList.add('hidden');
 
-            if (summary && db) {
-                renderSummary(summary);
-                renderRawData(db);
+            if (ufwSummary && ufwDb && nginxSummary && nginxDb) {
+                // Store loaded data
+                dashboardData = {
+                    ufwSummary,
+                    ufwDb,
+                    nginxSummary,
+                    nginxDb
+                };
+
+                // Initialize click handlers for tabs
+                document.getElementById('ufw-tab').addEventListener('click', () => switchView('ufw'));
+                document.getElementById('nginx-tab').addEventListener('click', () => switchView('nginx'));
+
+                // Render the default view (UFW)
+                renderUFWDashboard();
                 document.getElementById('data-view').classList.remove('hidden');
+
             } else {
-                // Error message already displayed by loadJsonFile
+                // One or more files failed to load. The error is already logged/displayed.
+                document.getElementById('data-view').innerHTML = `
+                    <p class="text-red-500 p-4 bg-red-100 rounded-lg">
+                        Failed to load all required data files. Please check the console for details.
+                    </p>
+                `;
             }
         }
 
