@@ -8,6 +8,9 @@ lgeufw.py - enrich firewall logs with geo information, writes two files ufw_ipin
 
 Display information from .json files with jq or create webserver that presents information.
 
+Example html site can be viewed on:
+https://krokodilsvans.github.io/
+
 Get top blocked IP in ufw jq -r 'select(.action=="BLOCK") | .ip' ufw_ipinfo_db.json | sort | uniq -c | sort -nr | head -n 10
 
 Got top requested IP for specific uri jq -r 'select(.uri=="/.env") | .ip' ipinfo_db.json | sort | uniq -c | sort -nr | head -n 10
